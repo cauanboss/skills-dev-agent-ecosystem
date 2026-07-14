@@ -4,6 +4,10 @@ mode: subagent
 model: opencode-go/deepseek-v4-flash
 reasoning: max
 color: "#F59E0B"
+permission:
+  edit: deny
+  bash: allow
+  task: deny
 ---
 
 # scope-guard-agent

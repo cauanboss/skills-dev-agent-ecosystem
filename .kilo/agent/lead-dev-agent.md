@@ -4,6 +4,11 @@ mode: primary
 model: opencode-go/deepseek-v4-pro
 reasoning: max
 color: "#DC2626"
+permission:
+  edit: deny
+  bash: allow
+  task: allow
+  webfetch: ask
 ---
 
 # lead-dev-agent

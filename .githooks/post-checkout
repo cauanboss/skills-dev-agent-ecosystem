@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# post-checkout — Sincroniza agentes e skills para ~/.config/kilo/ após checkout
+# que muda arquivos do ecossistema.
+set -euo pipefail
+
+ECOSYSTEM_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT="$ECOSYSTEM_DIR/scripts/sync-ecosystem.sh"
+
+# Verifica se o checkout mudou arquivos do ecossistema
+if [ "$3" = "1" ]; then
+    RECENT_FILES=$(git diff-tree --no-commit-id -r --name-only HEAD 2>/dev/null || true)
+    if echo "$RECENT_FILES" | grep -qE '^\.kilo/(agent|skills)/'; then
+        if [ -x "$SCRIPT" ]; then
+            "$SCRIPT" > /dev/null 2>&1 || true
+        fi
+    fi
+fi

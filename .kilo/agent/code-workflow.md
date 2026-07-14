@@ -4,6 +4,10 @@ mode: all
 model: opencode-go/deepseek-v4-flash
 reasoning: max
 color: "#FF8800"
+permission:
+  edit: ask
+  bash: allow
+  task: allow
 ---
 
 # code-workflow

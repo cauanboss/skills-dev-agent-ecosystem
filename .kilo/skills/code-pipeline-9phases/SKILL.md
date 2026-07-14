@@ -76,7 +76,17 @@ Pipeline de 9 fases obrigatório para implementação de tarefas de código. Use
 - Notas, riscos, status final.
 - Verificar: `rtk git diff --stat` mostra apenas arquivos esperados, sem secrets/PII.
 
-## Convenções Zflow (quando aplicável)
-- Branches: `feature/id-do-card`, `fix/id-do-card` a partir de `development`.
-- Hotfixes: `hotfix/descricao-curta` a partir de `main`.
-- Commits: Conventional Commits (`feat`, `fix`, `docs`, `refactor`, `chore`).
+## Convenções de branching e commits
+
+Convenções de branching e commits são específicas de cada projeto/organização.
+Defina-as no `AGENTS.md` do projeto ou em `.kilo/command/*.md` — não neste skill universal.
+
+### Exemplo (projetos Zflow)
+```yaml
+# AGENTS.md ou .kilo/command/git-conventions.md
+branches:
+  feature: feature/id-do-card a partir de development
+  fix: fix/id-do-card a partir de development
+  hotfix: hotfix/descricao-curta a partir de main
+commits: Conventional Commits (feat, fix, docs, refactor, chore)
+```

@@ -1,9 +1,12 @@
 ---
 description: Mapeia, documenta e valida regras de negócio do domínio. Usado como suporte pelo lead-dev-agent durante a fase de análise.
-mode: all
+mode: subagent
 model: opencode-go/deepseek-v4-flash
 reasoning: max
 color: "#8B5CF6"
+permission:
+  edit: deny
+  bash: allow
 ---
 
 # business-rules

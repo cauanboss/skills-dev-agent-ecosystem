@@ -1,9 +1,14 @@
 ---
 description: Atualiza documentação do projeto — registra mudanças, documenta APIs, mantém README e guias. Invocado por code-workflow (Fase 8) e lead-dev-agent.
-mode: all
+mode: subagent
 model: opencode-go/deepseek-v4-flash
 reasoning: max
 color: "#3B82F6"
+permission:
+  edit:
+    "*.md": allow
+    "*": ask
+  bash: allow
 ---
 
 # doc

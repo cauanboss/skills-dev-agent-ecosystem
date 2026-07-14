@@ -4,6 +4,9 @@ mode: subagent
 model: opencode-go/deepseek-v4-flash
 reasoning: max
 color: "#8B5CF6"
+permission:
+  edit: deny
+  bash: allow
 ---
 
 # ideas-agent

@@ -5,7 +5,7 @@ description: Metodologia e critérios de revisão de código — bugs, seguranç
 
 # code-review-checklist
 
-Checklist e metodologia para revisão de código. Use ao atuar como review-agent ou code-reviewer.
+Checklist e metodologia para revisão de código. Use ao atuar como review-agent.
 
 ## Regras fundamentais
 

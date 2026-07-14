@@ -1,0 +1,18 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "default_agent": "lead-dev-agent",
+  "model": "opencode-go/deepseek-v4-flash",
+  "small_model": "opencode-go/deepseek-v4-flash",
+  "instructions": ["AGENTS.md"],
+  "permission": {
+    "bash": "allow",
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "task": "allow",
+    "webfetch": "ask",
+    "write": "allow",
+    "skill": "allow",
+    "todowrite": "allow"
+  }
+}

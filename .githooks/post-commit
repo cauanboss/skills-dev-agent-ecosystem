@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# post-commit — Sincroniza agentes e skills para ~/.config/kilo/ após cada commit
+#
+# Para ativar (uma vez por clone):
+#   git config core.hooksPath .githooks
+#
+# Apenas sincroniza se arquivos em .kilo/agent/ ou .kilo/skills/ foram alterados
+# no commit. A sincronização é silenciosa (sem output) em modo hook.
+
+set -euo pipefail
+
+ECOSYSTEM_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT="$ECOSYSTEM_DIR/scripts/sync-ecosystem.sh"
+
+# Verifica se o commit atual tocou agentes ou skills
+RECENT_FILES=$(git diff-tree --no-commit-id -r --name-only HEAD 2>/dev/null || true)
+
+if echo "$RECENT_FILES" | grep -qE '^\.kilo/(agent|skills)/'; then
+    # Silencioso em modo hook — só loga se houver erro
+    if [ -x "$SCRIPT" ]; then
+        "$SCRIPT" > /dev/null 2>&1 || true
+    fi
+fi
