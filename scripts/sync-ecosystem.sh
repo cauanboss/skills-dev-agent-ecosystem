@@ -107,6 +107,7 @@ sync_agents() {
   done
 
   [ "$changes" -eq 0 ] && ok "[$label] agentes — OK (sem alterações)"
+  return 0
 }
 
 sync_skills() {
@@ -168,6 +169,7 @@ sync_skills() {
   done
 
   [ "$changes" -eq 0 ] && ok "[$label] skills — OK (sem alterações)"
+  return 0
 }
 
 # --- Execução ---

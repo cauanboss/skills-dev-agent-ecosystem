@@ -6,7 +6,7 @@ Ecossistema auto-gerido de agentes de desenvolvimento. Orquestra todo o ciclo: a
 
 ```
 .kilo/
-├── agent/                    ← 9 agentes finos (carregam skills)
+├── agent/                    ← 10 agentes finos (carregam skills)
 │   ├── lead-dev-agent.md     primary — carrega skill("lead-dev-workflow")
 │   ├── code-workflow.md      all    — carrega skill("code-pipeline-9phases")
 │   ├── dev-agent.md          subagent — carrega skill("dev-implementation-standards")
@@ -15,8 +15,9 @@ Ecossistema auto-gerido de agentes de desenvolvimento. Orquestra todo o ciclo: a
 │   ├── ideas-agent.md        subagent — carrega skill("design-exploration-methodology")
 │   ├── business-rules.md     subagent — carrega skill("business-rules-methodology")
 │   ├── doc.md                subagent — carrega skill("documentation-conventions")
+│   ├── db-agent.md           all    — carrega skill("database-expertise")
 │   └── agent-governance.md   all    — gerencia todo o ecossistema
-└── skills/                   ← 8 skills (workflows detalhados)
+└── skills/                   ← 9 skills (workflows detalhados)
     ├── lead-dev-workflow/SKILL.md
     ├── code-pipeline-9phases/SKILL.md
     ├── scope-validation/SKILL.md
@@ -24,7 +25,8 @@ Ecossistema auto-gerido de agentes de desenvolvimento. Orquestra todo o ciclo: a
     ├── design-exploration-methodology/SKILL.md
     ├── business-rules-methodology/SKILL.md
     ├── documentation-conventions/SKILL.md
-    └── dev-implementation-standards/SKILL.md
+    ├── dev-implementation-standards/SKILL.md
+    └── database-expertise/SKILL.md
 ```
 
 ## Pipeline de execução

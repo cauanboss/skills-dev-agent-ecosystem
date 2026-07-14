@@ -9,7 +9,7 @@ permission:
 
 # agent-governance
 
-Cria, valida e reconstrói agentes e skills do ecossistema (9 agentes, 8 skills) a partir do documento-fonte autoritativo.
+Cria, valida e reconstrói agentes e skills do ecossistema (10 agentes, 9 skills) a partir do documento-fonte autoritativo.
 
 ## Agentes gerenciados (global: `~/.config/kilo/agent/`)
 
@@ -46,9 +46,11 @@ Cria, valida e reconstrói agentes e skills do ecossistema (9 agentes, 8 skills)
 | `business-rules-methodology` | Mapeamento de regras de negócio (investigação, formato, categorias) | `business-rules` |
 | `documentation-conventions` | Estilo, READMEs, API docs, banco | `doc` |
 | `dev-implementation-standards` | Fluxo de implementação, scope creep rules, convenções por linguagem | `dev-agent` |
+| `database-expertise` | Modelagem SQL/NoSQL, índices, migrations, caching, GraphQL schema e resolvers | `db-agent` |
 
 ## Agentes de conhecimento especializado
 
+- `db-agent` — especialista em bancos de dados SQL, NoSQL, caches e GraphQL (all, carrega skill `database-expertise`)
 - `linux-agent` — especialista em Linux (all, `~/.config/kilo/agent/`)
 - `proton-agent` — especialista em Steam/Proton (all, `~/.config/kilo/agent/`)
 - `aws-saa-agent` — especialista em AWS Solutions Architect Associate (all, `~/.config/kilo/agent/`)
