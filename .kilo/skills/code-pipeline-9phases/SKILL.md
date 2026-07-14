@@ -45,12 +45,21 @@ Pipeline de 9 fases obrigatório para implementação de tarefas de código. Use
 
 ### Fase 5 — CODE REVIEW
 - Invoca `review-agent` via Task (subagent_type: `"review-agent"`) com `git diff`.
-- Se a task alterou arquivos de banco (`.sql`, `migrations/`, `repository/`, `model/`), incluir no prompt que o review-agent deve revisar também queries, migrations e schema.
+- Se a task alterou arquivos de banco (`.sql`, `migrations/`, `repository/`, `model/`, `schema/`, `graphql/`), invoca também **`db-agent`** para revisão especializada de banco.
 - Prompt pede categorização: blocker / bug / alerta / sugestão.
 - **blocker**: ABORTA e reporta ao lead-dev-agent.
 - **bug**: corrige + re-review (máx 2 ciclos).
 - **alerta/sugestão**: registra e prossegue.
 - Bugs residuais pós 2 ciclos: flag e prossegue.
+
+### Fase 5.1 — DB REVIEW (se aplicável)
+Se a task alterou arquivos de banco, após o CODE REVIEW padrão:
+- Invoca `db-agent` via Task (subagent_type: `"db-agent"`) com o diff e contexto.
+- Escopo da revisão: índices, queries, migrations, tipos, transações, N+1, cache.
+- Findings do db-agent seguem a mesma categorização (blocker / bug / alerta / sugestão).
+- **blocker**: ABORTA e reporta ao lead-dev-agent.
+- **bug**: encaminha para dev-agent corrigir + re-review (máx 2 ciclos).
+- **alerta/sugestão**: registra no relatório.
 
 ### Fase 6 — TEST
 - Executa `test_command` via `rtk`.

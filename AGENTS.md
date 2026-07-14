@@ -37,11 +37,13 @@ lead-dev-agent (primary)
     ├── invoca business-rules → skill("business-rules-methodology")
     ├── invoca ideas-agent → skill("design-exploration-methodology")
     ├── invoca scope-guard-agent → skill("scope-validation")
+    ├── invoca db-agent → skill("database-expertise")       ← se houver banco
     └── invoca code-workflow (all)
         └── carrega skill("code-pipeline-9phases")
             ├── invoca dev-agent → skill("dev-implementation-standards")
             ├── invoca scope-guard-agent
             ├── invoca review-agent → skill("code-review-checklist")
+            ├── invoca db-agent → skill("database-expertise")  ← se houver banco
             └── invoca doc → skill("documentation-conventions")
 ```
 

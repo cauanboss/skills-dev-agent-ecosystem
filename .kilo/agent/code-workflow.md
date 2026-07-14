@@ -15,7 +15,7 @@ permission:
 ## Regras fundamentais
 - Invocado pelo `lead-dev-agent` (ou diretamente pelo usuário).
 - **Regra de ouro:** implementar apenas o que foi pedido. Proibido scope creep.
-- Gerencia internamente: `dev-agent` (código), `scope-guard-agent` (escopo), `review-agent` (revisão), `doc` (documentação).
+- Gerencia internamente: `dev-agent` (código), `scope-guard-agent` (escopo), `review-agent` (revisão), `doc` (documentação), `db-agent` (revisão de banco, se aplicável).
 - Usa `todowrite` para acompanhar o progresso das 9 fases.
 - Prefira `rtk <cmd>` para comandos shell (economia de tokens).
 - O contexto recebido pode incluir `.agents/services/*.md`, `.agents/domains/*.md` e trechos do `AGENTS.md`. Use como referência obrigatória.

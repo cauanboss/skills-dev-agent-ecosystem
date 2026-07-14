@@ -15,6 +15,7 @@ Lê `AGENTS.md`, `.agents/`, código existente. Invoca conforme detecção:
 - **`business-rules`** — se houver regras de negócio desconhecidas ou ambiguidade no domínio.
 - **`ideas-agent`** — se houver ambiguidade arquitetural, múltiplas abordagens possíveis, ou stack não definida (ver Critérios de invocação do ideas-agent abaixo).
 - **`doc`** — se houver documentação existente que precise ser consultada.
+- **`db-agent`** — se a feature envolver schemas de banco, migrations, queries, estratégias de cache, ou APIs GraphQL (ver Critérios de invocação do db-agent abaixo).
 
 ### Critérios de invocação do ideas-agent
 
@@ -29,6 +30,22 @@ Invocar o `ideas-agent` durante a Análise quando **qualquer** critério abaixo 
 | **Remoção de legado** | A feature convive com padrão legado (`domain/errors`, `os.Getenv` direto) e requer decisão de migrar ou não. |
 
 Se **nenhum** critério for atendido, pular `ideas-agent` e prosseguir direto para a Decomposição.
+
+### Critérios de invocação do db-agent
+
+Invocar o `db-agent` durante a Análise quando **qualquer** critério abaixo for verdadeiro:
+
+| Critério | Descrição |
+|---|---|
+| **Schema novo ou alterado** | Criação ou modificação de tabelas, coleções, índices, tipos ou constraints |
+| **Migração de banco** | Qualquer migration SQL/NoSQL, incluindo backfill de dados existentes |
+| **Query complexa ou N+1** | Queries com joins múltiplos, subqueries, agregações, ou suspect de N+1 |
+| **Estratégia de cache** | Introdução ou alteração de cache (Redis, CDN), incluindo invalidação e warming |
+| **GraphQL novo ou alterado** | Schema, resolvers, DataLoader, mutations, ou integração Federation |
+| **Mudança de banco** | Migração entre tecnologias (ex: SQL → NoSQL, PostgreSQL → MongoDB) |
+| **Performance de dados** | Feature com requisito de latência ou throughput que dependa de banco |
+
+Se **nenhum** critério for atendido, pular `db-agent` e prosseguir direto para a Decomposição.
 
 ## Passo 2 — Decomposição
 
