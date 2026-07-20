@@ -1,12 +1,12 @@
 # AGENTS.md — dev-agent-ecosystem
 
-Ecossistema auto-gerido de agentes de desenvolvimento. Orquestra todo o ciclo: análise, decomposição, implementação, revisão e documentação.
+Ecossistema auto-gerido de agentes de desenvolvimento. Orquestra todo o ciclo: alinhamento, análise, decomposição, implementação, revisão, debugging e documentação.
 
 ## Estrutura
 
 ```
 .kilo/
-├── agent/                    ← 10 agentes finos (carregam skills)
+├── agent/                    ← 11 agentes finos (carregam skills)
 │   ├── lead-dev-agent.md     primary — carrega skill("lead-dev-workflow")
 │   ├── code-workflow.md      all    — carrega skill("code-pipeline-9phases")
 │   ├── dev-agent.md          subagent — carrega skill("dev-implementation-standards")
@@ -16,8 +16,9 @@ Ecossistema auto-gerido de agentes de desenvolvimento. Orquestra todo o ciclo: a
 │   ├── business-rules.md     subagent — carrega skill("business-rules-methodology")
 │   ├── doc.md                subagent — carrega skill("documentation-conventions")
 │   ├── db-agent.md           all    — carrega skill("database-expertise")
+│   ├── bug-hunter.md         all    — carrega skill("bug-diagnosis")
 │   └── agent-governance.md   all    — gerencia todo o ecossistema
-└── skills/                   ← 9 skills (workflows detalhados)
+└── skills/                   ← 10 skills (workflows detalhados)
     ├── lead-dev-workflow/SKILL.md
     ├── code-pipeline-9phases/SKILL.md
     ├── scope-validation/SKILL.md
@@ -26,32 +27,61 @@ Ecossistema auto-gerido de agentes de desenvolvimento. Orquestra todo o ciclo: a
     ├── business-rules-methodology/SKILL.md
     ├── documentation-conventions/SKILL.md
     ├── dev-implementation-standards/SKILL.md
-    └── database-expertise/SKILL.md
+    ├── database-expertise/SKILL.md
+    └── bug-diagnosis/SKILL.md
 ```
 
-## Pipeline de execução
+## Pipeline de execução (8 passos)
 
 ```
 lead-dev-agent (primary)
 └── carrega skill("lead-dev-workflow")
-    ├── invoca business-rules → skill("business-rules-methodology")
-    ├── invoca ideas-agent → skill("design-exploration-methodology")
-    ├── invoca scope-guard-agent → skill("scope-validation")
-    ├── invoca db-agent → skill("database-expertise")       ← se houver banco
-    └── invoca code-workflow (all)
-        └── carrega skill("code-pipeline-9phases")
-            ├── invoca dev-agent → skill("dev-implementation-standards")
-            ├── invoca scope-guard-agent
-            ├── invoca review-agent → skill("code-review-checklist")
-            ├── invoca db-agent → skill("database-expertise")  ← se houver banco
-            └── invoca doc → skill("documentation-conventions")
+    ├── Passo 0 — Alinhamento (entrevista o usuário)
+    ├── Passo 1 — Análise
+    │   ├── invoca business-rules → skill("business-rules-methodology")
+    │   ├── invoca ideas-agent → skill("design-exploration-methodology")
+    │   ├── invoca db-agent → skill("database-expertise")
+    │   └── invoca doc
+    ├── Passo 2 — Decomposição
+    │   └── Passo 2.1 — Publicar no tracker (opcional)
+    ├── Passo 3 — Validação de escopo (scope-guard-agent)
+    ├── Passo 4 — Apresentação do plano
+    ├── Passo 5 — Execução orquestrada
+    │   └── invoca code-workflow (all)
+    │       └── carrega skill("code-pipeline-9phases")
+    │           ├── Fase 1: DETECT
+    │           ├── Fase 2: CODE (RED→GREEN se TDD strict/relaxed)
+    │           ├── Fase 3: LINT  ──┐
+    │           ├── Fase 4: SCOPE ──┤ paralelo
+    │           ├── Fase 5: CODE REVIEW
+    │           ├── Fase 5.1: DB REVIEW (se aplicável)
+    │           ├── Fase 6: TEST
+    │           │   └── falha não-trivial → invoca bug-hunter → skill("bug-diagnosis")
+    │           ├── Fase 7: TEST REVIEW ──┐
+    │           ├── Fase 8: DOCS        ──┤ paralelo
+    │           └── Fase 9: REPORT
+    ├── Passo 6 — Verificação cross-task
+    └── Passo 7 — Relatório + PR Description + Handoff
 ```
 
 ## Como usar
 
 1. Selecione `lead-dev-agent` como agente primário (`@lead-dev-agent`)
 2. Ele carrega a skill `lead-dev-workflow` automaticamente
-3. Siga o fluxo de 7 passos: Análise → Decomposição → Scope → Plano → Execução → Verificação → Relatório
+3. Siga o fluxo de 8 passos: **Alinhamento → Análise → Decomposição → Scope → Plano → Execução → Verificação → Relatório**
+
+### Novos agentes
+
+| Agente | Skill | Quando usar |
+|---|---|---|
+| **`bug-hunter`** | `bug-diagnosis` | Debugging estruturado de bugs/regressões. Invocável diretamente (`@bug-hunter`) ou automaticamente pelo code-workflow em falhas não-triviais. |
+
+### Novos modos TDD
+
+O `code-workflow` agora aceita `tdd_mode` no contexto da tarefa:
+- `strict`: RED→GREEN obrigatório. Para lógica de negócio e contracts de API.
+- `relaxed`: RED→GREEN sugerido. Default. Prossegue se inviável.
+- `off`: sem TDD. Para config, docs, explore.
 
 ## Integração com projetos
 
@@ -68,67 +98,20 @@ Cada projeto pode ter:
 - **`kilo.json`** — define `default_agent` e permissões específicas do projeto.
 - **`AGENTS.md` próprio** — convenções específicas do projeto (naming, pacotes, produção, testes).
 
-### Projetos vinculados
-
-| Projeto | Agentes locais | Skills locais | `kilo.json` | `AGENTS.md` próprio |
-|---|---|---|---|---|
-| `rondas-microservices` | Sim (sincronizado) | Sim (sincronizado) | Sim | Sim (convenções Go) |
-| `patrol` | Não (usa global) | Não (usa global) | Sim | Sim (stack Node/Zflow) |
-| `linux` | Não (ecossistema Cursor) | Não (ecossistema Cursor) | Não | Sim (adaptação Cursor) |
-
 ## Manter atualizado
-
-### Auto-sync via git hooks (recomendado)
-
-O ecossistema usa hooks git para sincronizar automaticamente após commits, merges ou checkouts.
-
-```bash
-# Ativar hooks (uma vez por clone):
-git config core.hooksPath .githooks
-```
-
-Após ativar, toda alteração em `.kilo/agent/` ou `.kilo/skills/` dispara sync automático
-para `~/.config/kilo/`. Os hooks **não** sincronizam projetos automaticamente (apenas global)
-para evitar surpresas.
 
 ### Sync manual via comando
 
 ```
 /sync-ecosystem
+/sync-ecosystem --all
+/sync-ecosystem --check
 ```
 
 ### Sync via script
 
 ```bash
-# Global apenas
-./scripts/sync-ecosystem.sh
-
-# Global + todos os projetos
-./scripts/sync-ecosystem.sh --all
-
-# Apenas verificar diferenças (dry-run)
-./scripts/sync-ecosystem.sh --check
-```
-
-### De dentro de um projeto
-
-Projetos com cópias locais (ex: `rondas-microservices`):
-
-```
-/pull-ecosystem
-```
-
-### Cadeia completa de sincronização
-
-```
-skills-dev-agent-ecosystem/.kilo/    ← fonte canônica
-       │
-       ├── git hooks (post-commit/post-merge/post-checkout)
-       │     └── auto → ~/.config/kilo/   ← global (todos os projetos)
-       │
-       ├── /sync-ecosystem (comando Kilo)
-       │     └── ~/.config/kilo/ + rondas-microservices/.kilo/
-       │
-       └── scripts/sync-ecosystem.sh (script shell)
-             └── ~/.config/kilo/ + rondas-microservices/.kilo/
+./scripts/sync-ecosystem.sh              # global apenas
+./scripts/sync-ecosystem.sh --all        # global + todos os projetos
+./scripts/sync-ecosystem.sh --check      # dry-run
 ```

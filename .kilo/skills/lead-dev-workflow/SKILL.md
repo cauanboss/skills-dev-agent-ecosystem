@@ -1,11 +1,42 @@
 ---
 name: lead-dev-workflow
-description: Fluxo completo do lead-dev-agent — análise, decomposição, validação de escopo, plano, execução orquestrada, verificação cross-task e relatório final com PR
+description: Fluxo completo do lead-dev-agent — alinhamento, análise, decomposição, validação de escopo, plano, execução orquestrada, verificação cross-task e relatório final com PR + handoff
 ---
 
 # lead-dev-workflow
 
-Workflow de 7 passos para orquestração de desenvolvimento. Use como referência obrigatória ao atuar como lead-dev-agent.
+Workflow de 8 passos para orquestração de desenvolvimento. Use como referência obrigatória ao atuar como lead-dev-agent.
+
+## Passo 0 — Alinhamento
+
+**OBRIGATÓRIO.** Antes de qualquer análise técnica, alinhe o entendimento com o usuário. O objetivo é eliminar a falha #1 do desenvolvimento com agentes: "o agente não fez o que eu queria".
+
+### Procedimento
+
+1. **Reformule o objetivo** com suas palavras — curto, direto, sem jargão técnico.
+2. **Pergunte sobre edge cases e restrições** — uma pergunta por vez, aguardando resposta:
+   - "Quais cenários de erro / borda você já antecipa?"
+   - "Há restrições de prazo, tecnologia ou integração que eu deva saber?"
+   - "Como você vai saber que essa feature está pronta? Qual o critério de sucesso?"
+3. **Confirme serviços/domínios afetados** — liste os serviços que você acredita serem impactados e peça confirmação.
+4. **Confirme o plano de testes** — "Testes de integração são esperados? Cobertura de edge cases?"
+
+### Regras
+
+- **NUNCA** pule este passo, mesmo para tarefas "óbvias".
+- **Máximo 4 perguntas**. Não transforme em entrevista infinita. Se o usuário der respostas vagas, peça esclarecimento uma vez e prossiga com o que tem.
+- **Fatos** sobre o projeto (stack, estrutura, serviços) você consulta no `AGENTS.md` e `.agents/` — não pergunte o que pode descobrir sozinho.
+- **Decisões** (escopo, prioridades, trade-offs) são do usuário — apresente e aguarde.
+- **Critério de saída**: usuário confirma que o entendimento está correto. Se após 2 minutos sem resposta, prossegue com o entendimento atual e registra como "não confirmado" no relatório.
+
+### Anti-padrões
+
+- Pular o alinhamento porque "a tarefa é simples".
+- Fazer 8 perguntas de uma vez (bewildering).
+- Perguntar sobre a stack quando o `AGENTS.md` já tem essa informação.
+- Prosseguir sem confirmação explícita quando o usuário está disponível.
+
+---
 
 ## Passo 1 — Análise
 
@@ -47,6 +78,8 @@ Invocar o `db-agent` durante a Análise quando **qualquer** critério abaixo for
 
 Se **nenhum** critério for atendido, pular `db-agent` e prosseguir direto para a Decomposição.
 
+---
+
 ## Passo 2 — Decomposição
 
 Transforma objetivo em tarefas com a seguinte estrutura:
@@ -57,22 +90,43 @@ Transforma objetivo em tarefas com a seguinte estrutura:
   description: "..."
   subagent_type: "code-workflow"  # para code/test/config
   depends_on: ["T0"]              # IDs das tarefas que devem concluir primeiro
+  tdd_mode: strict | relaxed | off  # strict: RED→GREEN obrigatório; relaxed: sugere TDD; off: sem TDD
 ```
 
 - **Dependências**: identificar tarefas que compartilham schema, migrações, contracts de API, ou módulos sobrepostos. Tarefas com `depends_on` são executadas após as dependências concluírem. Tarefas sem dependências mútuas podem ser paralelizadas.
 - **Multimódulo Go**: cada módulo (`services/*/`) é independente. Tarefas em módulos diferentes são candidatas a paralelização. Tarefas no mesmo módulo devem ser sequenciais se houver overlap de arquivos.
+- **TDD mode**: `strict` para lógica de negócio e contracts de API (recomendado). `relaxed` para CRUD simples ou scripts. `off` apenas para config/docs/explore.
 - **Contexto adicional**: para cada tarefa, inclua no prompt do subagente:
   - Os arquivos `.agents/services/<serviço>.md` relevantes
   - Os arquivos `.agents/domains/<tema>.md` relevantes (naming, testing, config, errors, etc.)
   - As convenções do projeto do `AGENTS.md`
 
+### Passo 2.1 — Publicar no tracker (opcional, se configurado)
+
+Se o projeto tiver um issue tracker configurado (detectado via `AGENTS.md` ou `.kilo/tracker.json`):
+
+1. **Gerar tickets** a partir das tarefas decompostas, cada um contendo:
+   - Título descritivo
+   - Descrição com contexto do `.agents/`
+   - Label correspondente ao tipo (`code`, `test`, `config`, `doc`)
+   - Bloqueios explícitos: `blocked-by: #T0`
+2. **Publicar** via MCP do tracker (GitHub Issues, Linear, etc.) ou gerar arquivos locais em `.kilo/tickets/`.
+3. **Vincular** os IDs públicos aos IDs internos (`T1 → issue #42`).
+4. **Perguntar ao usuário** se deseja publicar antes de fazê-lo — não publique sem confirmação.
+
+---
+
 ## Passo 3 — Validação de escopo pré-código
 
 Invoca `scope-guard-agent` com o plano completo (tarefas + dependências). Tarefas bloqueadas → remove. Borderline → esclarece. Ajusta dependências se tarefas forem removidas.
 
+---
+
 ## Passo 4 — Apresentação do plano
 
 Apresenta a lista de tarefas com dependências e ordem de execução. Aguarda confirmação do usuário. **Timeout**: se o usuário não responder em 2 minutos, prossegue automaticamente com o plano apresentado.
+
+---
 
 ## Passo 5 — Execução orquestrada
 
@@ -84,8 +138,11 @@ Delega cada tarefa ao `code-workflow` via Task. Ordem:
 - **Conflito de merge**: se duas tarefas paralelas alteram o mesmo arquivo, pausa e reporta ao usuário com o diff dos dois lados.
 - **Contexto por tarefa**: o prompt enviado ao `code-workflow` deve incluir:
   - O objetivo específico da tarefa
+  - O `tdd_mode` definido na decomposição
   - Os arquivos de contexto relevantes (`.agents/services/*.md`, `.agents/domains/*.md`)
   - As convenções do projeto (AGENTS.md: naming, pacotes compartilhados, legado, testes multimódulo)
+
+---
 
 ## Passo 6 — Verificação cross-task
 
@@ -106,9 +163,15 @@ Após todas as tarefas concluírem:
 4. Nenhum secret/PII no diff.
 5. Nenhuma violação das políticas de produção do `AGENTS.md`.
 
-## Passo 7 — Relatório final + PR Description
+---
 
-Consolida resultados e gera arquivo `pr-description.md` na raiz do projeto com o template abaixo preenchido:
+## Passo 7 — Relatório final + PR Description + Handoff
+
+Consolida resultados e gera dois artefatos na raiz do projeto:
+
+### 7.1 — PR Description (`pr-description.md`)
+
+Template:
 
 ```markdown
 ## O que foi feito?
@@ -145,10 +208,50 @@ Regras:
 - O arquivo gerado fica na raiz do projeto para que o usuário possa copiar direto para a PR no GitHub.
 - Se o projeto tiver um arquivo `.kilo/pr-template.md`, usar esse template customizado em vez do padrão.
 
+### 7.2 — Handoff (`.kilo/handoff/<feature>.md`)
+
+Para features grandes que podem precisar continuar em outra sessão, gera um arquivo de handoff com:
+
+```markdown
+# Handoff: {título da feature}
+Data: {data}
+
+## Estado atual
+- Tarefas concluídas: {N}/{total}
+- Tarefas pendentes: {lista com IDs e descrições}
+
+## Decisões arquiteturais
+- {decisão 1}: {contexto e por quê}
+- {decisão 2}: {contexto e por quê}
+
+## Domínio
+- {termo 1}: {definição}
+- {termo 2}: {definição}
+
+## Tickets publicados
+- {link para issue #42} (T1)
+- {link para issue #43} (T2)
+
+## Próximos passos
+1. {ação concreta}
+2. {ação concreta}
+
+## Avisos
+- {risco ou limitação conhecida}
+```
+
+Regras:
+- O handoff só é gerado se a feature tiver 3+ tarefas ou for explicitamente solicitado.
+- Se o handoff já existir de uma sessão anterior, atualiza em vez de sobrescrever (preserva o histórico de decisões).
+- O diretório `.kilo/handoff/` é criado automaticamente se não existir.
+
+---
+
 ## Tratamento de falhas
 
 | Cenário | Ação |
 |---|---|
+| **Alinhamento não confirmado (Passo 0)** | Prossegue após 2 min com nota "não confirmado" no relatório. |
 | **Scope borderline (pré-código)** | Avalia justificativa do `scope-guard-agent`. Decide: aprovar, consultar o usuário, ou bloquear. |
 | **Scope bloqueado (pré-código)** | Remove a tarefa do plano. Ajusta dependências de tarefas que dependiam dela. Se inviabilizar o objetivo, reporta ao usuário. |
 | **Timeout do usuário (passo 4)** | Prossegue automaticamente com o plano apresentado após 2 minutos sem resposta. |
@@ -159,3 +262,4 @@ Regras:
 | **Secrets/PII no diff** | Bloqueia a tarefa. Reporta ao usuário com a localização exata. Não prossegue até resolução. |
 | **Violação de produção** | Bloqueia imediatamente. Reporta qual política foi violada (Docker/banco/fila/env/secret). |
 | **Retentativas exauridas** | Após 2 retentativas sem sucesso, reporta ao usuário com resumo das tentativas e diagnóstico. Não faz 3ª tentativa automática. |
+| **Tracker indisponível (Passo 2.1)** | Gera tickets locais em `.kilo/tickets/` como fallback. Reporta ao usuário. |
