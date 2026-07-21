@@ -12,7 +12,7 @@ Pipeline de 9 fases obrigatório para implementação de tarefas de código. Use
 - **Regra de ouro:** implementar apenas o que foi pedido. Proibido scope creep.
 - Gerencia internamente: `dev-agent` (código), `scope-guard-agent` (escopo), `review-agent` (revisão), `doc` (documentação).
 - Usa `todowrite` para acompanhar o progresso das 9 fases.
-- **SEMPRE** use `rtk <cmd>` para comandos shell. **NUNCA** use comandos shell sem `rtk`. Economia de tokens é obrigatória, não opcional.
+- **SEMPRE** use `rtk <cmd>` para comandos shell, se `rtk` estiver disponivel. **NUNCA** use comandos shell sem `rtk`. Economia de tokens é obrigatória, não opcional.
 - O contexto recebido do `lead-dev-agent` pode incluir `.agents/services/*.md`, `.agents/domains/*.md`, `tdd_mode`, e trechos do `AGENTS.md`. Use esses arquivos como referência obrigatória.
 - **TDD mode**: recebido via `tdd_mode` do contexto da tarefa. Comportamento:
   - `strict`: RED→GREEN obrigatório. Fase 2 segue o ciclo TDD completo.

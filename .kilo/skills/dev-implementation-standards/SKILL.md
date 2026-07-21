@@ -25,7 +25,7 @@ Padrões e convenções para implementação de código. Use ao atuar como dev-a
    - Queries SQL: **sempre usar parameterized queries/binding** — proibido string interpolation.
    - Transações: escopo mínimo, propagar contexto (`ctx`), rollback em erro.
    - Cria/atualiza testes unitários e de integração se houver banco.
-3. **Verificação local** — roda linter e testes **SEMPRE** via `rtk`. Corrige até passarem limpos. **NUNCA** rode comandos shell sem `rtk`.
+3. **Verificação local** — roda linter e testes **SEMPRE** via `rtk` (se disponivel). Corrige até passarem limpos. **NUNCA** rode comandos shell sem `rtk`.
    - **Multimódulo Go**: roda `go test ./...` no módulo específico, NÃO na raiz.
    - Verifica `rtk git diff --stat` mostra apenas alterações esperadas.
 4. **Reporte** — lista arquivos criados/alterados, testes, lint, notas.

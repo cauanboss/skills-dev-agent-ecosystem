@@ -24,7 +24,7 @@ Workflow de 8 passos para orquestração de desenvolvimento. Use como referênci
 ### Regras
 
 - **NUNCA** pule este passo, mesmo para tarefas "óbvias".
-- **SEMPRE** use `rtk <cmd>` para comandos shell. **NUNCA** use comandos shell sem `rtk`. Economia de tokens é obrigatória, não opcional.
+- **SEMPRE** use `rtk <cmd>` para comandos shell, se `rtk` estiver disponivel. **NUNCA** use comandos shell sem `rtk`. Economia de tokens é obrigatória, não opcional.
 - **Máximo 4 perguntas**. Não transforme em entrevista infinita. Se o usuário der respostas vagas, peça esclarecimento uma vez e prossiga com o que tem.
 - **Fatos** sobre o projeto (stack, estrutura, serviços) você consulta no `AGENTS.md` e `.agents/` — não pergunte o que pode descobrir sozinho.
 - **Decisões** (escopo, prioridades, trade-offs) são do usuário — apresente e aguarde.

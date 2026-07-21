@@ -42,11 +42,64 @@ ON users (email) INCLUDE (name, avatar_url);
 
 ### Migrations
 
+#### Princípios fundamentais
+
 - **Forward-only**: nova migration sempre adiciona, nunca altera a anterior.
 - **Idempotente**: usar `IF NOT EXISTS` / `IF EXISTS` / `CREATE OR REPLACE`.
 - **Rollback**: cada migration DEVE ter `DOWN` testado, mesmo que seja `DROP TABLE`.
 - **Batch**: migrações que alteram tabelas grandes (>1M linhas) devem ser batch (ex: `batched ALTER`, `pt-online-schema-change`).
 - **Lock**: evitar `ADD COLUMN DEFAULT` com valor não nulo em tabelas grandes (lock write). Preferir: `ADD COLUMN`, `UPDATE batch`, `ALTER COLUMN SET NOT NULL`.
+
+#### Estratégias de deploy
+
+| Estratégia | Descrição | Downtime | Rollback | Complexidade |
+|---|---|---|---|---|
+| **Expand-Contract** | Adicionar coluna/tabela compatível com código antigo, migrar dados, remover old | Zero | Sim (reverter app) | Média |
+| **Parallel Run** | Escrever em old e novo simultaneamente, comparar resultados, cortar | Zero | Sim (desligar novo) | Alta |
+| **Big Bang** | Parar app, migrar tudo, subir app | Downtime total | Sim (restore) | Baixa |
+| **Phase-Out (Feature Flag)** | Feature flag controla qual schema a app usa, migrar gradualmente por usuário | Zero | Sim (toggle flag) | Média |
+
+**Regra geral**: zero-downtime é o padrão esperado. Big bang só é aceitável em janelas de manutenção agendadas e comunicadas.
+
+#### Data backfill
+
+- **Batch size**: 1000–5000 registros por lote (ajustar conforme tamanho da linha e IO do banco).
+- **Progress tracking**: tabela de controle `migration_batches` com `(id, total_rows, processed_rows, status, error)`.
+- **Idempotência**: usar `ON CONFLICT DO UPDATE` (PostgreSQL) / `MERGE` (SQL Server) / `INSERT ... ON DUPLICATE KEY UPDATE` (MySQL).
+- **Validação pós-backfill**: `COUNT(*)` entre old e new deve ser igual; amostragem de registros com diff checksum.
+- **Rate limiting**: respeitar `max_connections` e IOPS do banco — pausar N ms entre batches se necessário.
+
+#### Validação pós-migração
+
+Checklist executado APÓS aplicar a migration e antes de considerar concluída:
+
+1. `COUNT(*)` old vs new — mesma contagem
+2. Amostragem aleatória de registros — diff de checksum por coluna mapeada
+3. Monitorar logs de erro da aplicação por 5–10 min pós-deploy
+4. Verificar queries lentas (PG: `pg_stat_activity` com `state = 'active'`)
+5. Testar rollback (`DOWN`) em staging com o mesmo volume de dados
+6. Verificar se índices foram criados e estão sendo usados (`EXPLAIN ANALYZE`)
+
+#### Ferramentas por stack
+
+| Stack | Ferramenta | Comando / Uso |
+|---|---|---|
+| Python / SQLAlchemy | Alembic | `alembic revision --autogenerate -m "add_column_x"` |
+| Go | `golang-migrate/migrate` | `migrate create -ext sql -dir migrations add_column_x` |
+| Node / TypeORM | TypeORM migrations | `typeorm migration:create src/migration/AddColumnX` |
+| Node / Prisma | `prisma migrate` | `prisma migrate dev --name add_column_x` |
+| Java / Hibernate | Flyway | `flyway migrate` (arquivos `V1__desc.sql`) |
+| .NET / EF Core | `dotnet ef migrations` | `dotnet ef migrations add AddColumnX` |
+| Ruby / ActiveRecord | `rake db:migrate` | Gerado automaticamente com `rails generate migration` |
+| PHP / Laravel | Eloquent migrations | `php artisan make:migration add_column_x` |
+
+#### Migrações em NoSQL
+
+- **MongoDB**: schema é flexível, mas migrations ainda são necessárias para dados existentes:
+  - Script de `updateMany` com filtro em documentos sem o campo
+  - Validação com `$jsonSchema` para garantir que documentos novos sigam o novo formato
+  - Batch com `cursor` + `bulkWrite` para milhões de documentos
+- **DynamoDB**: não há schema migration no banco — a migração é no código que lê o atributo (versão de item). Usar campo `v: Int` em cada item para controle de versão.
 
 ### Queries
 
